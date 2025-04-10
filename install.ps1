@@ -14,7 +14,7 @@ Refresh-Path
 
 uv python install 3.12.8
 
-$scriptUrl = "https://raw.githubusercontent.com/AnshB08/irs1318-env-setup/refs/heads/main/install.py?token=GHSAT0AAAAAAC4FXCGVNHD5BXVGNCZU54U6Z7YBJPQ"
+$scriptUrl = "https://raw.githubusercontent.com/AnshB08/irs1318-env-setup/refs/heads/main/install.py"
 $tempFile = "$env:TEMP\install.py"
 
 Invoke-WebRequest -Uri $scriptUrl -OutFile $tempDir

@@ -36,6 +36,16 @@ def install_git():
     """Install Git for Windows without package managers"""
     print("Installing Git for Windows...")
 
+    def test_git():
+        verify = subprocess.run(["git", "--version"], capture_output=True, text=True)
+        if verify.returncode == 0:
+            return True
+        else:
+            return False
+
+    if test_git():
+        return ("Git", False, "Git is already installed")
+
     # Create temp directory
     temp_dir = tempfile.mkdtemp()
     installer_path = os.path.join(temp_dir, "git_installer.exe")
@@ -64,12 +74,7 @@ def install_git():
     if not download_file(git_url, installer_path):
         return ("Git", False, "Failed to download Git installer")
 
-    # Run the installer with required parameters
-    # /VERYSILENT: No UI during install
-    # /NORESTART: Don't restart after installation
-    # /NOCANCEL: Disable cancellation during install
-    # /COMPONENTS: Select components to install
-    # These parameters ensure git.exe is added to PATH
+    # Run installer
     try:
         print("Running Git installer...")
         install_args = [
@@ -88,15 +93,9 @@ def install_git():
             return ("Git", False, f"Installation failed: {result.stderr}")
 
         # Verify git is in PATH
-        try:
-            verify = subprocess.run(
-                ["git", "--version"], capture_output=True, text=True
-            )
-            if verify.returncode == 0:
-                return ("Git", True, f"Git installed successfully: {verify.stdout}")
-            else:
-                return ("Git", False, "Git was installed but cannot be found in PATH")
-        except FileNotFoundError:
+        if test_git():
+            return ("Git", True, f"Git installed successfully")
+        else:
             return ("Git", False, "Git was installed but cannot be found in PATH")
 
     except Exception as e:
@@ -113,26 +112,35 @@ def install_vscode():
     """Install VS Code without package managers"""
     print("Installing Visual Studio Code...")
 
+    def test_vscode():
+        verify = subprocess.run(["code", "--version"], capture_output=True, text=True)
+        if verify.returncode == 0:
+            return True
+        else:
+            return False
+
+    if test_vscode():
+        return ("VS Code", False, "VS Code is already installed")
+
     # Create temp directory
     temp_dir = tempfile.mkdtemp()
-    vscode_installer = os.path.join(temp_dir, "vscode_installer.exe")
+    installer_path = os.path.join(temp_dir, "vscode_installer.exe")
 
     # VS Code System Installer URL (64-bit)
     vscode_url = "https://code.visualstudio.com/sha/download?build=stable&os=win32-x64"
 
     # Download the installer
-    if not download_file(vscode_url, vscode_installer):
+    if not download_file(vscode_url, installer_path):
         return ("VS Code", False, "Failed to download VS Code installer")
 
-    # Run the installer with required parameters
+    # Run installer
     try:
         print("Running VS Code installer...")
         # These parameters ensure VS Code is added to PATH
         install_args = [
-            vscode_installer,
+            installer_path,
             "/VERYSILENT",
-            "/NORESTART",
-            "/MERGETASKS=!runcode,addcontextmenufiles,addcontextmenufolders,associatewithfiles,addtopath",
+            "/MERGETASKS=!runcode",
         ]
 
         result = subprocess.run(install_args, capture_output=True, text=True)
@@ -141,34 +149,23 @@ def install_vscode():
             return ("VS Code", False, f"Installation failed: {result.stderr}")
 
         # Verify VS Code is in PATH
-        try:
-            # Wait a bit to make sure PATH is updated
-            import time
+        # Wait a bit to make sure PATH is updated
+        import time
 
-            time.sleep(5)
+        time.sleep(5)
 
-            verify = subprocess.run(
-                ["code", "--version"], capture_output=True, text=True
+        if test_vscode():
+            return (
+                "VS Code",
+                True,
+                f"VS Code installed successfully",
             )
-            if verify.returncode == 0:
-                return (
-                    "VS Code",
-                    True,
-                    f"VS Code installed successfully: {verify.stdout}",
-                )
-            else:
-                return (
-                    "VS Code",
-                    False,
-                    "VS Code was installed but cannot be found in PATH",
-                )
-        except FileNotFoundError:
+        else:
             return (
                 "VS Code",
                 False,
                 "VS Code was installed but cannot be found in PATH",
             )
-
     except Exception as e:
         return ("VS Code", False, f"Error during VS Code installation: {str(e)}")
     finally:

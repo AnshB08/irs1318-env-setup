@@ -17,7 +17,9 @@ uv python install 3.12.8
 $scriptUrl = "https://raw.githubusercontent.com/AnshB08/irs1318-env-setup/refs/heads/main/install.py"
 $tempFile = "$env:TEMP\install.py"
 
-Invoke-WebRequest -Uri $scriptUrl -OutFile $tempFile
+# Invoke-WebRequest -Uri $scriptUrl -OutFile $tempFile
+
+powershell -ExecutionPolicy ByPass -c "irm $scriptUrl | iex"
 
 uv run $tempFile
 

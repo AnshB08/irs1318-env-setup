@@ -8,6 +8,8 @@ import shutil
 import winreg
 import ctypes
 from pathlib import Path
+import re
+import json
 
 
 def is_admin():
@@ -38,9 +40,24 @@ def install_git():
     temp_dir = tempfile.mkdtemp()
     git_installer = os.path.join(temp_dir, "git_installer.exe")
 
-    # Latest Git for Windows installer URL
-    git_url = "https://github.com/git-for-windows/git/releases/download/v2.41.0.windows.3/Git-2.41.0.3-64-bit.exe"
+    def get_git_url():
+        latest_release = "https://api.github.com/repos/git-for-windows/git/releases/latest"
+        try:
+            with urllib.request.urlopen(latest_release) as response:
+                assets = json.load(response)["assets"]
+                for asset in assets:
+                    if re.match(r"Git-\d*\.\d*\.\d*-64-bit\.exe", asset["name"]):
+                        return asset["browser_download_url"]
+        except Exception as e:
+            print(f"Failed to retrieve latest Git install url: {e}")
+            return None
 
+    # Get latest Git install url for Windows 64 bit systems
+    git_url = get_git_url()
+
+    if git_url is None:
+        return ("Git", False, "Failed to retrieve latest Git install url")
+    
     # Download the installer
     if not download_file(git_url, git_installer):
         return ("Git", False, "Failed to download Git installer")

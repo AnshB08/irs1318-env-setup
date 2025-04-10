@@ -203,9 +203,7 @@ def configure_uv():
     os.system("pdm config use_uv true")
 
     # Get Python directory from uv and configure PDM
-    uv_python_dir_result = subprocess.run(
-        ["uv", "python", "dir"], capture_output=True, text=True
-    )
+    uv_python_dir_result = os.system("uv python dir")
     uv_python_dir = uv_python_dir_result.stdout.strip()
     os.system(f"pdm config python.install_root {uv_python_dir}")
 
@@ -216,7 +214,7 @@ def configure_uv():
     )
 
 
-def install_single_extension(extension):
+def install_extension(extension):
     print(f"Installing VS Code extension: {extension}...")
     result = subprocess.run(
         ["code", "--install-extension", extension], capture_output=True, text=True
@@ -229,7 +227,7 @@ def install_vscode_extensions_parallel(extensions):
     results = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as extension_executor:
         future_to_ext = {
-            extension_executor.submit(install_single_extension, ext): ext
+            extension_executor.submit(install_extension, ext): ext
             for ext in extensions
         }
 

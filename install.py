@@ -13,7 +13,7 @@ from pathlib import Path
 def is_admin():
     """Check if the script is running with admin privileges"""
     try:
-        return ctypes.windll.shell32.IsUserAnAdmin()
+        return bool(ctypes.windll.shell32.IsUserAnAdmin())
     except:
         return False
 

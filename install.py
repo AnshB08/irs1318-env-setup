@@ -38,10 +38,12 @@ def install_git():
 
     # Create temp directory
     temp_dir = tempfile.mkdtemp()
-    git_installer = os.path.join(temp_dir, "git_installer.exe")
+    installer_path = os.path.join(temp_dir, "git_installer.exe")
 
     def get_git_url():
-        latest_release = "https://api.github.com/repos/git-for-windows/git/releases/latest"
+        latest_release = (
+            "https://api.github.com/repos/git-for-windows/git/releases/latest"
+        )
         try:
             with urllib.request.urlopen(latest_release) as response:
                 assets = json.load(response)["assets"]
@@ -57,9 +59,9 @@ def install_git():
 
     if git_url is None:
         return ("Git", False, "Failed to retrieve latest Git install url")
-    
+
     # Download the installer
-    if not download_file(git_url, git_installer):
+    if not download_file(git_url, installer_path):
         return ("Git", False, "Failed to download Git installer")
 
     # Run the installer with required parameters
@@ -71,12 +73,13 @@ def install_git():
     try:
         print("Running Git installer...")
         install_args = [
-            git_installer,
+            installer_path,
             "/VERYSILENT",
             "/NORESTART",
             "/NOCANCEL",
-            "/COMPONENTS=icons,icons\desktop,ext,ext\shellhere,ext\guihere,gitlfs,assoc,assoc_sh",
-            "/ADDTOPATH=ALL",  # This adds Git to PATH for all users
+            "/COMPONENTS=icons,gitlfs,windowsterminal,scalar",
+            "/EDITOROPTION=VisualStudioCode",
+            "/DEFAULTBRANCHNAME=main",
         ]
 
         result = subprocess.run(install_args, capture_output=True, text=True)

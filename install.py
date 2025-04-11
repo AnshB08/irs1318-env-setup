@@ -12,6 +12,33 @@ import re
 import json
 
 
+def refresh_path():
+    """Refresh the PATH environment variable during runtime"""
+    print("Refreshing PATH environment variable...")
+    
+    try:
+        # Get the current PATH from the registry
+        with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r'SYSTEM\CurrentControlSet\Control\Session Manager\Environment') as key:
+            system_path = winreg.QueryValueEx(key, 'Path')[0]
+            
+        # Get the current user PATH
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Environment') as key:
+            try:
+                user_path = winreg.QueryValueEx(key, 'Path')[0]
+            except:
+                user_path = ""
+                
+        # Combine system and user paths
+        full_path = system_path + ";" + user_path
+        
+        # Update the PATH environment variable for the current process
+        os.environ['PATH'] = full_path
+        
+        return True
+    except Exception as e:
+        print(f"Error refreshing PATH: {str(e)}")
+        return False
+
 def is_admin():
     """Check if the script is running with admin privileges"""
     try:
@@ -37,7 +64,9 @@ def install_git():
     print("Installing Git for Windows...")
 
     def test_git():
-        verify = subprocess.run(["powershell", "git", "--version"], capture_output=True, text=True)
+        verify = subprocess.run(
+            ["powershell", "git", "--version"], capture_output=True, text=True
+        )
         if verify.returncode == 0:
             return True
         else:
@@ -94,6 +123,9 @@ def install_git():
             return ("Git", False, f"Installation failed: {result.stderr}")
 
         # Verify git is in PATH
+
+        refresh_path()
+
         if test_git():
             return ("Git", True, f"Git installed successfully")
         else:
@@ -114,7 +146,9 @@ def install_vscode():
     print("Installing Visual Studio Code...")
 
     def test_vscode():
-        verify = subprocess.run(["powershell", "code", "--version"], capture_output=True, text=True)
+        verify = subprocess.run(
+            ["powershell", "code", "--version"], capture_output=True, text=True
+        )
         if verify.returncode == 0:
             return True
         else:
@@ -151,10 +185,8 @@ def install_vscode():
             return ("VS Code", False, f"Installation failed: {result.stderr}")
 
         # Verify VS Code is in PATH
-        # Wait a bit to make sure PATH is updated
-        import time
 
-        time.sleep(5)
+        refresh_path()
 
         if test_vscode():
             return (
@@ -188,7 +220,9 @@ def configure_uv():
     for tool in uv_tools:
         print(f"Installing {tool} with UV...")
         result = subprocess.run(
-            ["powershell", "uv", "tool", "install", tool], capture_output=True, text=True
+            ["powershell", "uv", "tool", "install", tool],
+            capture_output=True,
+            text=True,
         )
         results.append((f"UV tool: {tool}", result.returncode == 0, result.stdout))
 
@@ -205,10 +239,12 @@ def configure_uv():
     os.system("pdm config use_uv true")
 
     # Get Python directory from uv and configure PDM
-    uv_python_dir_result = os.system("uv python dir")
-    uv_python_dir = uv_python_dir_result.stdout.strip()
+    uv_python_dir_result = subprocess.run(
+        ["powershell", "uv", "python", "dir"], capture_output=True, text=False
+    )
+    uv_python_dir = uv_python_dir_result.stdout.strip().decode()
     os.system(f"pdm config python.install_root {uv_python_dir}")
-
+    str.encode()
     return (
         "UV Configuration",
         all(r[1] for r in results),
@@ -219,7 +255,9 @@ def configure_uv():
 def install_extension(extension):
     print(f"Installing VS Code extension: {extension}...")
     result = subprocess.run(
-        ["powershell", "code", "--install-extension", extension], capture_output=True, text=True
+        ["powershell", "code", "--install-extension", extension],
+        capture_output=True,
+        text=True,
     )
     return (extension, result.returncode == 0, result.stdout)
 
@@ -229,8 +267,7 @@ def install_vscode_extensions_parallel(extensions):
     results = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as extension_executor:
         future_to_ext = {
-            extension_executor.submit(install_extension, ext): ext
-            for ext in extensions
+            extension_executor.submit(install_extension, ext): ext for ext in extensions
         }
 
         for future in concurrent.futures.as_completed(future_to_ext):
@@ -317,6 +354,8 @@ def main():
                 install_vscode_extensions_parallel(vscode_extensions)
             except Exception as e:
                 print(f"✗ VS Code Extensions installation generated an exception: {e}")
+
+        refresh_path()
 
 
 if __name__ == "__main__":

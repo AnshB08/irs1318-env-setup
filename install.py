@@ -14,8 +14,6 @@ import json
 
 def refresh_path():
     """Refresh the PATH environment variable during runtime"""
-    print("Refreshing PATH environment variable...")
-    
     try:
         # Get the current PATH from the registry
         with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r'SYSTEM\CurrentControlSet\Control\Session Manager\Environment') as key:
@@ -356,6 +354,8 @@ def main():
                 print(f"✗ VS Code Extensions installation generated an exception: {e}")
 
         refresh_path()
+
+        print("Restart terminal")
 
 
 if __name__ == "__main__":

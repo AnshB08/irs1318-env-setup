@@ -236,14 +236,14 @@ def configure_uv():
 
     # Configure PDM after all UV tools are installed
     print("Configuring PDM...")
-    os.system("pdm config use_uv true")
+    os.system("powershell pdm config use_uv true")
 
     # Get Python directory from uv and configure PDM
     uv_python_dir_result = subprocess.run(
         ["powershell", "uv", "python", "dir"], capture_output=True, text=False
     )
     uv_python_dir = uv_python_dir_result.stdout.strip().decode()
-    os.system(f"pdm config python.install_root {uv_python_dir}")
+    os.system(f"powershell pdm config python.install_root {uv_python_dir}")
 
     return (
         "UV Configuration",

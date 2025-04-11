@@ -244,7 +244,7 @@ def configure_uv():
     )
     uv_python_dir = uv_python_dir_result.stdout.strip().decode()
     os.system(f"pdm config python.install_root {uv_python_dir}")
-    str.encode()
+
     return (
         "UV Configuration",
         all(r[1] for r in results),

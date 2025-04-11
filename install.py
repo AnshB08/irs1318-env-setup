@@ -37,7 +37,7 @@ def install_git():
     print("Installing Git for Windows...")
 
     def test_git():
-        verify = subprocess.run(["git", "--version"], capture_output=True, text=True)
+        verify = subprocess.run(["powershell", "git", "--version"], capture_output=True, text=True)
         if verify.returncode == 0:
             return True
         else:
@@ -78,6 +78,7 @@ def install_git():
     try:
         print("Running Git installer...")
         install_args = [
+            "powershell",
             installer_path,
             "/VERYSILENT",
             "/NORESTART",
@@ -113,7 +114,7 @@ def install_vscode():
     print("Installing Visual Studio Code...")
 
     def test_vscode():
-        verify = subprocess.run(["code", "--version"], capture_output=True, text=True)
+        verify = subprocess.run(["powershell", "code", "--version"], capture_output=True, text=True)
         if verify.returncode == 0:
             return True
         else:
@@ -138,6 +139,7 @@ def install_vscode():
         print("Running VS Code installer...")
         # These parameters ensure VS Code is added to PATH
         install_args = [
+            "powershell",
             installer_path,
             "/VERYSILENT",
             "/MERGETASKS=!runcode",
@@ -186,13 +188,13 @@ def configure_uv():
     for tool in uv_tools:
         print(f"Installing {tool} with UV...")
         result = subprocess.run(
-            ["uv", "tool", "install", tool], capture_output=True, text=True
+            ["powershell", "uv", "tool", "install", tool], capture_output=True, text=True
         )
         results.append((f"UV tool: {tool}", result.returncode == 0, result.stdout))
 
     # Update shell
     shell_result = subprocess.run(
-        ["uv", "tool", "update-shell"], capture_output=True, text=True
+        ["powershell", "uv", "tool", "update-shell"], capture_output=True, text=True
     )
     results.append(
         ("UV update-shell", shell_result.returncode == 0, shell_result.stdout)
@@ -217,7 +219,7 @@ def configure_uv():
 def install_extension(extension):
     print(f"Installing VS Code extension: {extension}...")
     result = subprocess.run(
-        ["code", "--install-extension", extension], capture_output=True, text=True
+        ["powershell", "code", "--install-extension", extension], capture_output=True, text=True
     )
     return (extension, result.returncode == 0, result.stdout)
 
@@ -310,7 +312,7 @@ def main():
                 print(f"✗ {app} generated an exception: {e}")
 
         # Install VS Code extensions if VS Code installation didn't trigger it
-        if not vscode_completed:
+        if vscode_completed:
             try:
                 install_vscode_extensions_parallel(vscode_extensions)
             except Exception as e:

@@ -240,11 +240,19 @@ def configure_uv():
 
 def install_extension(extension):
     print(f"Installing VS Code extension: {extension}...")
-    result = subprocess.run(
-        ["powershell", "code", "--install-extension", extension],
-        capture_output=True,
-        text=True,
-    )
+    attempt = 0
+
+    while True:
+        attempt += 1
+        result = subprocess.run(
+            ["powershell", "code", "--install-extension", extension],
+            capture_output=True,
+            text=True,
+        )
+
+        if result.returncode == 1 or attempt > 3:
+            break
+
     return (extension, result.returncode == 0, result.stdout)
 
 

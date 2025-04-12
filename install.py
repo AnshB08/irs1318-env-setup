@@ -14,7 +14,12 @@ import json
 
 def refresh_path():
     """Refresh the PATH environment variable during runtime"""
-    os.system('powershell $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")')
+    ps_command = (
+        '$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")'
+        ' + ";" +'
+        '[System.Environment]::GetEnvironmentVariable("Path","User")'
+    )
+    subprocess.run(["powershell", "-Command", ps_command])
 
 
 def is_admin():
@@ -36,6 +41,7 @@ def download_file(url, path):
         print(f"Failed to download {url}: {e}")
         return False
 
+
 def test_git():
     verify = subprocess.run(
         ["powershell", "git", "--version"], capture_output=True, text=True
@@ -44,6 +50,7 @@ def test_git():
         return True
     else:
         return False
+
 
 def install_git():
     """Install Git for Windows without package managers"""
@@ -117,6 +124,7 @@ def install_git():
         except:
             pass
 
+
 def test_vscode():
     verify = subprocess.run(
         ["powershell", "code", "--version"], capture_output=True, text=True
@@ -125,6 +133,7 @@ def test_vscode():
         return True
     else:
         return False
+
 
 def install_vscode():
     """Install VS Code without package managers"""
@@ -156,6 +165,7 @@ def install_vscode():
         ]
 
         result = subprocess.run(install_args, capture_output=True, text=True)
+        subprocess.Popen()
 
         if result.returncode != 0:
             return ("VS Code", False, f"Installation failed: {result.stderr}")
@@ -325,6 +335,8 @@ def main():
                 install_vscode_extensions_parallel(vscode_extensions)
             except Exception as e:
                 print(f"✗ VS Code Extensions installation generated an exception: {e}")
+        else:
+            print("Unable to verify VS Code install, not installing extensions")
 
         refresh_path()
 

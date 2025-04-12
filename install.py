@@ -16,26 +16,30 @@ def refresh_path():
     """Refresh the PATH environment variable during runtime"""
     try:
         # Get the current PATH from the registry
-        with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r'SYSTEM\CurrentControlSet\Control\Session Manager\Environment') as key:
-            system_path = winreg.QueryValueEx(key, 'Path')[0]
-            
+        with winreg.OpenKey(
+            winreg.HKEY_LOCAL_MACHINE,
+            r"SYSTEM\CurrentControlSet\Control\Session Manager\Environment",
+        ) as key:
+            system_path = winreg.QueryValueEx(key, "Path")[0]
+
         # Get the current user PATH
-        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Environment') as key:
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Environment") as key:
             try:
-                user_path = winreg.QueryValueEx(key, 'Path')[0]
+                user_path = winreg.QueryValueEx(key, "Path")[0]
             except:
                 user_path = ""
-                
+
         # Combine system and user paths
         full_path = system_path + ";" + user_path
-        
+
         # Update the PATH environment variable for the current process
-        os.environ['PATH'] = full_path
-        
+        os.environ["PATH"] = full_path
+
         return True
     except Exception as e:
         print(f"Error refreshing PATH: {str(e)}")
         return False
+
 
 def is_admin():
     """Check if the script is running with admin privileges"""
@@ -56,19 +60,18 @@ def download_file(url, path):
         print(f"Failed to download {url}: {e}")
         return False
 
+def test_git():
+    verify = subprocess.run(
+        ["powershell", "git", "--version"], capture_output=True, text=True
+    )
+    if verify.returncode == 0:
+        return True
+    else:
+        return False
 
 def install_git():
     """Install Git for Windows without package managers"""
     print("Installing Git for Windows...")
-
-    def test_git():
-        verify = subprocess.run(
-            ["powershell", "git", "--version"], capture_output=True, text=True
-        )
-        if verify.returncode == 0:
-            return True
-        else:
-            return False
 
     if test_git():
         return ("Git", False, "Git is already installed")
@@ -138,19 +141,18 @@ def install_git():
         except:
             pass
 
+def test_vscode():
+    verify = subprocess.run(
+        ["powershell", "code", "--version"], capture_output=True, text=True
+    )
+    if verify.returncode == 0:
+        return True
+    else:
+        return False
 
 def install_vscode():
     """Install VS Code without package managers"""
     print("Installing Visual Studio Code...")
-
-    def test_vscode():
-        verify = subprocess.run(
-            ["powershell", "code", "--version"], capture_output=True, text=True
-        )
-        if verify.returncode == 0:
-            return True
-        else:
-            return False
 
     if test_vscode():
         return ("VS Code", False, "VS Code is already installed")
@@ -305,7 +307,8 @@ def main():
         "ms-python.debugpy",
         "ms-python.black-formatter",
         "ms-python.pylint",
-        "ms-toolsai.jupyter" "mhutchie.git-graph",
+        "ms-toolsai.jupyter",
+        "mhutchie.git-graph",
         "visualstudioexptteam.vscodeintellicode",
         "visualstudioexptteam.intellicode-api-usage-examples",
         "christian-kohler.path-intellisense",
@@ -327,8 +330,6 @@ def main():
             executor.submit(configure_uv): "UV Configuration",
         }
 
-        vscode_completed = False
-
         # Process results as they complete
         for future in concurrent.futures.as_completed(future_to_app):
             app = future_to_app[future]
@@ -336,18 +337,14 @@ def main():
                 name, success, output = future.result()
                 if success:
                     print(f"✓ {name} completed successfully")
-                    if name == "VS Code":
-                        vscode_completed = True
-                        # Install VS Code extensions as soon as VS Code is ready
-                        install_vscode_extensions_parallel(vscode_extensions)
                 else:
                     print(f"✗ {name} failed")
                     print(output)
             except Exception as e:
                 print(f"✗ {app} generated an exception: {e}")
 
-        # Install VS Code extensions if VS Code installation didn't trigger it
-        if vscode_completed:
+        # Install VS Code extensions
+        if test_vscode():
             try:
                 install_vscode_extensions_parallel(vscode_extensions)
             except Exception as e:

@@ -23,32 +23,6 @@ def refresh_path():
     )
     subprocess.run(["powershell", "-Command", ps_command])
 
-    try:
-        # Get the current PATH from the registry
-        with winreg.OpenKey(
-            winreg.HKEY_LOCAL_MACHINE,
-            r"SYSTEM\CurrentControlSet\Control\Session Manager\Environment",
-        ) as key:
-            system_path = winreg.QueryValueEx(key, "Path")[0]
-
-        # Get the current user PATH
-        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Environment") as key:
-            try:
-                user_path = winreg.QueryValueEx(key, "Path")[0]
-            except:
-                user_path = ""
-
-        # Combine system and user paths
-        full_path = system_path + ";" + user_path
-
-        # Update the PATH environment variable for the current process
-        os.environ["PATH"] = full_path
-
-        return True
-    except Exception as e:
-        print(f"Error refreshing PATH: {str(e)}")
-        return False
-
 
 def is_admin():
     """Check if the script is running with admin privileges"""

@@ -134,8 +134,8 @@ def install_git():
         else:
             return ("Git", False, "Git was installed but cannot be found in PATH")
 
-    except Exception as e:
-        return ("Git", False, f"Error during Git installation: {str(e)}")
+    # except Exception as e:
+    #     return ("Git", False, f"Error during Git installation: {str(e)}")
     finally:
         # Clean up temp directory
         try:
@@ -204,8 +204,8 @@ def install_vscode():
                 False,
                 "VS Code was installed but cannot be found in PATH",
             )
-    except Exception as e:
-        return ("VS Code", False, f"Error during VS Code installation: {str(e)}")
+    # except Exception as e:
+    #     return ("VS Code", False, f"Error during VS Code installation: {str(e)}")
     finally:
         # Clean up temp directory
         try:

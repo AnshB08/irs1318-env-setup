@@ -14,13 +14,6 @@ import json
 
 def refresh_path():
     """Refresh the PATH environment variable during runtime"""
-    ps_command = (
-        '$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")'
-        ' + ";" +'
-        '[System.Environment]::GetEnvironmentVariable("Path","User")'
-    )
-    subprocess.run(["powershell", "-Command", ps_command])
-
     try:
         # Get the current PATH from the registry
         with winreg.OpenKey(
@@ -371,7 +364,12 @@ def main():
         else:
             print("Unable to verify VS Code install, not installing extensions")
 
-        refresh_path()
+        ps_command = (
+        '$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")'
+        ' + ";" +'
+        '[System.Environment]::GetEnvironmentVariable("Path","User")'
+        )
+        subprocess.run(["powershell", "-Command", ps_command])
 
         print("Restart terminal")
 

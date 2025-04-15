@@ -10,6 +10,7 @@ import ctypes
 from pathlib import Path
 import re
 import json
+import time
 
 
 def refresh_path():
@@ -270,6 +271,10 @@ def install_extension(extension):
 
         if result.returncode == 1 or attempt > 3:
             break
+
+        # wait 1 sec before trying again
+        time.sleep(1)
+
 
     return (extension, result.returncode == 0, result.stdout)
 

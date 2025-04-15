@@ -15,6 +15,14 @@ import time
 
 def refresh_path():
     """Refresh the PATH environment variable during runtime"""
+
+    ps_command = (
+        '$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")'
+        ' + ";" +'
+        '[System.Environment]::GetEnvironmentVariable("Path","User")'
+    )
+    subprocess.run(["powershell", "-Command", ps_command])
+
     try:
         # Get the current PATH from the registry
         with winreg.OpenKey(
@@ -63,12 +71,16 @@ def download_file(url, path):
 
 
 def test_git():
-    verify = subprocess.run(
-        ["powershell", "git", "--version"], capture_output=True, text=True
-    )
-    if verify.returncode == 0:
-        return True
-    else:
+    try:
+        verify = subprocess.run(
+            ["powershell", "git", "--version"], capture_output=True, text=True
+        )
+        if verify.returncode == 0:
+            return True
+        else:
+            return False
+    except Exception as e:
+        print(f"Unable to verify Git install: {str(e)}")
         return False
 
 
@@ -94,7 +106,7 @@ def install_git():
                     if re.match(r"Git-\d*\.\d*\.\d*-64-bit\.exe", asset["name"]):
                         return asset["browser_download_url"]
         except Exception as e:
-            print(f"Failed to retrieve latest Git install url: {e}")
+            print(f"Failed to retrieve latest Git install url: {str(e)}")
             return None
 
     # Get latest Git install url for Windows 64 bit systems
@@ -135,8 +147,8 @@ def install_git():
         else:
             return ("Git", False, "Git was installed but cannot be found in PATH")
 
-    # except Exception as e:
-    #     return ("Git", False, f"Error during Git installation: {str(e)}")
+    except Exception as e:
+        return ("Git", False, f"Error during Git installation: {str(e)}")
     finally:
         # Clean up temp directory
         try:
@@ -146,12 +158,17 @@ def install_git():
 
 
 def test_vscode():
-    verify = subprocess.run(
-        ["powershell", "code", "--version"], capture_output=True, text=True
-    )
-    if verify.returncode == 0:
-        return True
-    else:
+    # winerror 2 caused by code not being in path
+    try:
+        verify = subprocess.run(
+            ["powershell", "code", "--version"], capture_output=True, text=True
+        )
+        if verify.returncode == 0:
+            return True
+        else:
+            return False
+    except Exception as e:
+        print(f"Unable to verify VS Code install: {e}")
         return False
 
 
@@ -205,8 +222,8 @@ def install_vscode():
                 False,
                 "VS Code was installed but cannot be found in PATH",
             )
-    # except Exception as e:
-    #     return ("VS Code", False, f"Error during VS Code installation: {str(e)}")
+    except Exception as e:
+        return ("VS Code", False, f"Error during VS Code installation: {str(e)}")
     finally:
         # Clean up temp directory
         try:
@@ -274,7 +291,6 @@ def install_extension(extension):
 
         # wait 1 sec before trying again
         time.sleep(1)
-
 
     return (extension, result.returncode == 0, result.stdout)
 
@@ -350,29 +366,31 @@ def main():
         # Process results as they complete
         for future in concurrent.futures.as_completed(future_to_app):
             app = future_to_app[future]
-            # try:
-            name, success, output = future.result()
-            if success:
-                print(f"✓ {name} completed successfully")
-            else:
-                print(f"✗ {name} failed")
-                print(output)
-            # except Exception as e:
-            #     print(f"✗ {app} generated an exception: {e}")
+            try:
+                name, success, output = future.result()
+                if success:
+                    print(f"✓ {name} completed successfully")
+                else:
+                    print(f"✗ {name} failed")
+                    print(output)
+            except Exception as e:
+                print(f"✗ {app} generated an exception: {e}")
 
         # Install VS Code extensions
         if test_vscode():
             try:
                 install_vscode_extensions_parallel(vscode_extensions)
             except Exception as e:
-                print(f"✗ VS Code Extensions installation generated an exception: {e}")
+                print(
+                    f"✗ VS Code Extensions installation generated an exception: {str(e)}"
+                )
         else:
             print("Unable to verify VS Code install, not installing extensions")
 
         ps_command = (
-        '$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")'
-        ' + ";" +'
-        '[System.Environment]::GetEnvironmentVariable("Path","User")'
+            '$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")'
+            ' + ";" +'
+            '[System.Environment]::GetEnvironmentVariable("Path","User")'
         )
         subprocess.run(["powershell", "-Command", ps_command])
 

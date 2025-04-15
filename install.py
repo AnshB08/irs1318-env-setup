@@ -318,16 +318,10 @@ def main():
 
     # List of VS Code extensions
     vscode_extensions = [
-        "vscode-icons-team.vscode-icons",
         "ms-python.python",
-        "ms-python.vscode-pylance",
-        "ms-python.debugpy",
-        "ms-python.black-formatter",
-        "ms-python.pylint",
-        "ms-toolsai.jupyter",
+        "vscode-icons-team.vscode-icons",
         "mhutchie.git-graph",
         "visualstudioexptteam.vscodeintellicode",
-        "visualstudioexptteam.intellicode-api-usage-examples",
         "christian-kohler.path-intellisense",
         "esbenp.prettier-vscode",
         "dbaeumer.vscode-eslint",
@@ -335,7 +329,13 @@ def main():
         "xabikos.JavaScriptSnippets",
         "ecmel.vscode-html-css",
         "Zignd.html-css-class-completion",
+        "ms-toolsai.jupyter",
+        "visualstudioexptteam.intellicode-api-usage-examples",
+        "ms-python.pylint",
+        "ms-python.black-formatter",
         "ms-vscode.powershell",
+        "ms-python.debugpy",
+        "ms-python.vscode-pylance",
     ]
 
     # Create a thread pool executor for main installations

@@ -350,15 +350,15 @@ def main():
         # Process results as they complete
         for future in concurrent.futures.as_completed(future_to_app):
             app = future_to_app[future]
-            try:
-                name, success, output = future.result()
-                if success:
-                    print(f"✓ {name} completed successfully")
-                else:
-                    print(f"✗ {name} failed")
-                    print(output)
-            except Exception as e:
-                print(f"✗ {app} generated an exception: {e}")
+            # try:
+            name, success, output = future.result()
+            if success:
+                print(f"✓ {name} completed successfully")
+            else:
+                print(f"✗ {name} failed")
+                print(output)
+            # except Exception as e:
+            #     print(f"✗ {app} generated an exception: {e}")
 
         # Install VS Code extensions
         if test_vscode():

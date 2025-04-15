@@ -165,7 +165,6 @@ def install_vscode():
         ]
 
         result = subprocess.run(install_args, capture_output=True, text=True)
-        subprocess.Popen()
 
         if result.returncode != 0:
             return ("VS Code", False, f"Installation failed: {result.stderr}")
